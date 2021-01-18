@@ -1,13 +1,22 @@
-// Docs on event and context https://www.netlify.com/docs/functions/#the-handler-method
-const handler = async event => {
+// import { APIGatewayEvent, Context } from "aws-lambda"
+
+const faunadb = require("faunadb")
+const q = faunadb.query
+const handler = async (event, context) => {
   try {
-    const subject = event.queryStringParameters.name || "World"
+    const client = new faunadb.Client({ secret: process.env.FAUNADB_SECRET })
+    if (event.httpMethod !== "POST") {
+      throw new Error("Invalid Request Method...")
+    }
+    const requestBody = JSON.parse(event.body)
+    const queryResults = await client.query(
+      q.Delete(q.Ref(q.Collection("contacts"), requestBody.docId))
+    )
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: `Hello ${subject}` }),
-      // // more keys you can return:
-      // headers: { "headerName": "headerValue", ... },
-      // isBase64Encoded: true,
+      body: JSON.stringify({
+        message: `Contact deleted Successfully from ${queryResults.ref.id}`,
+      }),
     }
   } catch (error) {
     return { statusCode: 500, body: error.toString() }
