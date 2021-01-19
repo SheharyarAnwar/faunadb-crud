@@ -106,7 +106,6 @@ const Index = () => {
             required
             name="phoneNumber"
             type="tel"
-            pattern="[0,9]"
           ></input>
           <button disabled={loading} type="submit">
             Add Record
